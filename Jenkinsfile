@@ -23,7 +23,7 @@ pipeline {
             steps {
                 withMaven(
                     maven: 'maven3.9.9',
-                    jdk: 'java8',
+                    jdk: 'java17',
                     traceability: true
                 ) {
                     sh 'mvn clean install'
