@@ -19,7 +19,8 @@ pipeline {
         stage('Checkout SCM') {
             steps{
                 git url: 'https://github.com/Bhavish3000/game-of-life_fork.git',
-                    branch: 'master'
+                    branch: 'master',
+                    credentialsId: 'github'
             }
 
         }
