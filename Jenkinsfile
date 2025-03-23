@@ -11,7 +11,7 @@ pipeline {
     tools {
         maven 'maven3.9.9'
         jdk 'java8'
-        codeql 'CodeQL 2.5.5'
+        codeql 'CodeQL2.20.7'
     }
 
     stages {
@@ -48,7 +48,7 @@ pipeline {
 
         stage('CodeQL Analysis') {
             steps {
-                withCodeQL(codeql: 'CodeQL 2.5.5') {
+                withCodeQL(codeql: 'CodeQL 2.20.7') {
                       sh 'codeql database create codeql-db --language=java --source-root=.'
                       sh "codeql database analyze codeql-db --format=sarif-latest --output=${CODEQL_RESULTS} --threads=4"
 
@@ -65,11 +65,11 @@ pipeline {
 
         stage('Upload Results to GitHub') {
             steps {
-                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
+                withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
                    sh """
                         curl -X POST -H "Authorization: token ${GITHUB_TOKEN}" \
                         -H "Accept: application/vnd.github.v3+json" \
-                        https://api.github.com/repos/Bhavish3000/game-of-life_fork/code-scanning/sarif \
+                        https://api.github.com/repos/Bhavish3000/GameofLifeCICD/code-scanning/sarif \
                         -d @${CODEQL_RESULTS}
                     """
 
