@@ -20,7 +20,7 @@ pipeline {
             steps{
                 git url: 'https://github.com/Bhavish3000/game-of-life_fork.git',
                     branch: 'master',
-                    credentialsId: 'github'
+                    credentialsId: 'GithubCredentials'
             }
 
         }
@@ -66,7 +66,7 @@ pipeline {
 
         stage('Upload Results to GitHub') {
             steps {
-                withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
                    sh """
                         curl -X POST -H "Authorization: token ${GITHUB_TOKEN}" \
                         -H "Accept: application/vnd.github.v3+json" \
