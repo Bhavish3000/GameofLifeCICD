@@ -6,6 +6,7 @@ pipeline {
 
     environment {
         CODEQL_RESULTS = 'results.sarif'
+        GITHUB_REPO = 'Bhavish3000/GameofLifeCICD'
     }
     
     tools {
@@ -49,10 +50,9 @@ pipeline {
 
         stage('CodeQL Analysis') {
             steps {
-                withCodeQL(codeql: 'CodeQL 2.20.7') {
+                withCodeQL(codeql: 'CodeQL2.20.7') {
                       sh 'codeql database create codeql-db --language=java --source-root=.'
                       sh "codeql database analyze codeql-db --format=sarif-latest --output=${CODEQL_RESULTS} --threads=4"
-
                 }
             }
         }
@@ -70,7 +70,7 @@ pipeline {
                    sh """
                         curl -X POST -H "Authorization: token ${GITHUB_TOKEN}" \
                         -H "Accept: application/vnd.github.v3+json" \
-                        https://api.github.com/repos/Bhavish3000/GameofLifeCICD/code-scanning/sarif \
+                        https://api.github.com/repos/${GITHUB_REPO}/code-scanning/sarif \
                         -d @${CODEQL_RESULTS}
                     """
 
@@ -88,7 +88,9 @@ pipeline {
             echo 'Build or artifact archiving failed!'
         }
         always {
+           withCodeQL(codeql: 'CodeQL2.20.7') {
             sh 'codeql database delete codeql-db'
+           }
         }
     }
 }
