@@ -52,7 +52,7 @@ pipeline {
             steps {
                 withCodeQL(codeql: 'CodeQL2.20.7') {
                       sh 'codeql database create codeql-db --language=java --source-root=.'
-                      sh "codeql database analyze codeql-db --format=sarif-latest --output=${CODEQL_RESULTS} --threads=4"
+                      sh "codeql database analyze codeql-db codeql/java-queries --format=sarif-latest --output=${CODEQL_RESULTS} --threads=4"
                 }
             }
         }
