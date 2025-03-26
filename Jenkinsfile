@@ -4,15 +4,10 @@ pipeline {
         pollSCM('H/15 * * * *')
     }
 
-    environment {
-        CODEQL_RESULTS = 'results.sarif'
-        GITHUB_REPO = 'Bhavish3000/GameofLifeCICD'
-    }
     
     tools {
         maven 'maven3.9.9'
         jdk 'java8'
-        codeql 'CodeQL2.20.7'
     }
 
     stages {
@@ -34,7 +29,7 @@ pipeline {
                     traceability: true
                 ) {
                     sh 'mvn clean install'
-                    junit '**/target/surefire-reports/*.xml'
+                    junit '*/surefire-reports/*.xml'
                 }
             }
         }
@@ -48,32 +43,20 @@ pipeline {
             }
         }
 
-        stage('CodeQL Analysis') {
+        stage('SonarCloud analysis') {
             steps {
-                withCodeQL(codeql: 'CodeQL2.20.7') {
-                      sh 'codeql database create codeql-db --language=java --source-root=. --overwrite'
-                      sh "codeql database analyze codeql-db codeql/java-queries --format=sarif-latest --output=${CODEQL_RESULTS} --threads=4"
-                }
+                          withSonarQubeEnv(credentialsId: 'SONARCLOUD_TOKEN',installationName: 'SONAR_CLOUD') {
+                            sh 'mvn clean package org.sonarsource.scanner.maven:sonar-maven-plugin:3.7.0.1746:sonar 
+                          -Dsonar.organization=gameoflifebhavish -Dsonar.projectKey=1df882c96abe130b80ff99bc2fc7e4b745535a7f'
+                          }  
+                          
             }
         }
 
-        stage('Archive Results') {
+        stage('Quality Gate') {
             steps {
-               archiveArtifacts artifacts: "${CODEQL_RESULTS}",
-                fingerprint: true 
-            }
-        }
-
-        stage('Upload Results to GitHub') {
-            steps {
-                withCredentials([string(credentialsId: 'GITHUB_TOKEN', variable: 'GITHUB_TOKEN')]) {
-                   sh """
-                        curl -X POST -H "Authorization: token ${GITHUB_TOKEN}" \
-                        -H "Accept: application/vnd.github.v3+json" \
-                        https://api.github.com/repos/${GITHUB_REPO}/code-scanning/sarif \
-                        -d @${CODEQL_RESULTS}
-                    """
-
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
@@ -87,10 +70,6 @@ pipeline {
         failure {
             echo 'Build or artifact archiving failed!'
         }
-        always {
-           withCodeQL(codeql: 'CodeQL2.20.7') {
-            sh 'codeql database cleanup codeql-db --force'
-           }
-        }
+        
     }
 }
