@@ -46,8 +46,12 @@ pipeline {
         stage('SonarCloud analysis') {
             steps {
                           withSonarQubeEnv(credentialsId: 'SONARCLOUD_TOKEN',installationName: 'SONAR_CLOUD') {
-                            sh 'mvn clean package org.sonarsource.scanner.maven:sonar-maven-plugin:3.7.0.1746:sonar 
-                          -Dsonar.organization=gameoflifebhavish -Dsonar.projectKey=1df882c96abe130b80ff99bc2fc7e4b745535a7f'
+                            sh '''
+                            mvn clean package \
+                            org.sonarsource.scanner.maven:sonar-maven-plugin:3.7.0.1746:sonar \
+                            -Dsonar.organization=gameoflifebhavish \
+                            -Dsonar.projectKey=your-project-key-here
+                            '''
                           }  
                           
             }
